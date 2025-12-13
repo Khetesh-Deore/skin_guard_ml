@@ -1,15 +1,22 @@
+# config.yaml
 data:
-  dir: './data/HAM10000/'
-  img_size: [224, 224]
-  batch_size: 8
+  dir: './data/HAM10000'
+  img_size: [300, 300]      # EfficientNetB3 native input is 300x300
+  batch_size: 8             # If CPU, reduce to 4 or 2
+  shuffle: True
+
 model:
   num_classes: 7
   epochs: 50
-  learning_rate: 0.001
+  learning_rate: 0.0001
+  fine_tune_at: 200         # number of layers to unfreeze for fine-tuning (tweak if OOM)
+  pretrained: true
+
 paths:
-  models_dir: "models"
-  logs_dir: "logs"
-  outputs_dir: "outputs"
+  models_dir: './models'
+  logs_dir: './logs'
+  outputs_dir: './outputs'
+
 class_names:
   0: 'akiec'
   1: 'bcc'
