@@ -307,30 +307,6 @@ def get_model_info() -> Dict:
     }
 
 
-def get_internal_model():
-    """
-    Get the underlying Keras model object.
-    WARNING: For debug/internal use only.
-    """
-    return _model
-
-
-def get_class_names() -> List[str]:
-    """
-    Get list of disease class names indexed by model output.
-    """
-    if not _disease_mapping:
-        return []
-    
-    # Assuming mapping is "0": "Name", "1": "Name"
-    # We need to ensure they are sorted by index
-    try:
-        sorted_indices = sorted([int(k) for k in _disease_mapping.keys()])
-        return [_disease_mapping[str(i)] for i in sorted_indices]
-    except Exception:
-        return list(_disease_mapping.values())
-
-
 def is_model_loaded() -> bool:
     """
     Check if model is loaded and ready for predictions.

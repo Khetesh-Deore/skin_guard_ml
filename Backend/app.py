@@ -9,7 +9,6 @@ from flask_cors import CORS
 
 from config import get_config_class
 from routes.predict_routes import predict_bp
-from routes.debug_routes import debug_bp
 from modules import predictor
 
 
@@ -56,7 +55,6 @@ def create_app() -> Flask:
         return jsonify({"error": "Internal Server Error"}), 500
 
     app.register_blueprint(predict_bp, url_prefix="/api")
-    app.register_blueprint(debug_bp, url_prefix="/api")
 
     def _handle_termination(_signum, _frame):
         raise SystemExit(0)

@@ -16,8 +16,7 @@ def test_predictor():
     
     # Get paths
     base_dir = Path(__file__).resolve().parent
-    # model_path = base_dir / "models" / "skin_efficientnet_v2_final_90plus.h5"
-    model_path = base_dir / "models" / "best_model.h5"
+    model_path = base_dir / "models" / "skin_efficientnet_v2_final_90plus.h5"
     mapping_path = base_dir / "models" / "disease_mapping.json"
     
     # Test 1: Load model
