@@ -2,6 +2,7 @@ data/**
 models/**
 logs/**
 outputs/**
+notebooks/**
 __pycache__/
 *.h5
 *.png
