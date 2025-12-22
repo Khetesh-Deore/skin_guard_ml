@@ -1,0 +1,254 @@
+.symptom-input-container {
+	background: white;
+	border-radius: 12px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	position: relative;
+}
+
+.symptom-input-container h3 {
+	margin: 0 0 8px;
+	color: #333;
+	font-size: 1.1rem;
+	font-weight: 600;
+}
+
+.symptom-input-container .subtitle {
+	margin: 0 0 16px;
+	color: #666;
+	font-size: 0.9rem;
+}
+
+.input-area {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.tags-input-wrapper {
+	flex: 1;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 10px 12px;
+	border: 2px solid #e0e0e0;
+	border-radius: 8px;
+	min-height: 44px;
+	background: #fafafa;
+	transition: border-color 0.2s;
+}
+
+.tags-input-wrapper:focus-within {
+	border-color: #1976d2;
+	background: white;
+}
+
+.symptom-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	background: #e3f2fd;
+	color: #1565c0;
+	padding: 6px 10px;
+	border-radius: 16px;
+	font-size: 0.85rem;
+	font-weight: 500;
+}
+
+.remove-tag-btn {
+	background: none;
+	border: none;
+	color: #1565c0;
+	font-size: 1.1rem;
+	cursor: pointer;
+	padding: 0;
+	line-height: 1;
+	opacity: 0.7;
+	transition: opacity 0.2s;
+}
+
+.remove-tag-btn:hover {
+	opacity: 1;
+}
+
+.symptom-text-input {
+	flex: 1;
+	min-width: 150px;
+	border: none;
+	outline: none;
+	font-size: 0.95rem;
+	background: transparent;
+	padding: 4px 0;
+}
+
+.symptom-text-input::placeholder {
+	color: #999;
+}
+
+.symptom-text-input:disabled {
+	cursor: not-allowed;
+}
+
+.clear-all-btn {
+	background: none;
+	border: 1px solid #d32f2f;
+	color: #d32f2f;
+	padding: 10px 16px;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: all 0.2s;
+}
+
+.clear-all-btn:hover {
+	background: #d32f2f;
+	color: white;
+}
+
+.error-message {
+	margin-top: 10px;
+	padding: 10px 14px;
+	background: #ffebee;
+	color: #c62828;
+	border-radius: 6px;
+	font-size: 0.85rem;
+}
+
+.symptom-count {
+	margin-top: 8px;
+	font-size: 0.8rem;
+	color: #888;
+	text-align: right;
+}
+
+.symptoms-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	margin-top: 4px;
+	background: white;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	max-height: 300px;
+	overflow-y: auto;
+	z-index: 100;
+}
+
+.category-group {
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.category-group:last-child {
+	border-bottom: none;
+}
+
+.category-header {
+	padding: 10px 14px;
+	background: #f5f7fa;
+	color: #666;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.symptoms-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 12px 14px;
+}
+
+.symptom-option {
+	background: #fafafa;
+	border: 1px solid #e0e0e0;
+	padding: 8px 14px;
+	border-radius: 20px;
+	font-size: 0.85rem;
+	cursor: pointer;
+	transition: all 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.symptom-option:hover:not(:disabled) {
+	background: #e3f2fd;
+	border-color: #1976d2;
+}
+
+.symptom-option.selected {
+	background: #e3f2fd;
+	border-color: #1976d2;
+	color: #1565c0;
+}
+
+/* Keyboard navigation highlight (Feature 10.2) */
+.symptom-option.highlighted {
+	background: #e3f2fd;
+	border-color: #1976d2;
+	outline: 2px solid #1976d2;
+	outline-offset: 1px;
+}
+
+.symptom-option:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+
+.check-icon {
+	color: #1976d2;
+	font-size: 0.9rem;
+}
+
+.no-results {
+	padding: 20px;
+	text-align: center;
+}
+
+.no-results p {
+	margin: 0 0 12px;
+	color: #666;
+}
+
+.add-custom-btn {
+	background: #1976d2;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 20px;
+	font-size: 0.9rem;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.add-custom-btn:hover {
+	background: #1565c0;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+	.symptom-input-container {
+		padding: 16px;
+	}
+
+	.input-area {
+		flex-direction: column;
+	}
+
+	.clear-all-btn {
+		width: 100%;
+	}
+
+	.symptoms-dropdown {
+		position: fixed;
+		left: 16px;
+		right: 16px;
+		top: auto;
+		bottom: 16px;
+		max-height: 50vh;
+	}
+}

@@ -76,7 +76,7 @@ def _initialize_model(app: Flask) -> None:
         if not os.path.exists(model_path):
             # Try the actual model file in the models directory
             base_dir = Path(__file__).resolve().parent
-            actual_model = base_dir / "models" / "skin_efficientnet_v2_final_90plus.h5"
+            actual_model = base_dir / "models" / "best_model.h5"
             if actual_model.exists():
                 model_path = str(actual_model)
                 app.logger.info(f"Using actual model: {model_path}")

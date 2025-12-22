@@ -16,7 +16,7 @@ class BaseConfig:
     ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
     MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", str(5 * 1024 * 1024)))
 
-    MODEL_PATH = os.getenv("MODEL_PATH", str(BASE_DIR / "models" / "trained_model.h5"))
+    MODEL_PATH = os.getenv("MODEL_PATH", str(BASE_DIR / "models" / "best_model.h5"))
 
     RATE_LIMIT_ENABLED = os.getenv("RATE_LIMIT_ENABLED", "false").lower() in {
         "1",

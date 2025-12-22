@@ -79,6 +79,10 @@ def _default_allowed_extensions() -> set[str]:
 
 
 def _default_input_size() -> tuple[int, int]:
+    """
+    Get the model input size from environment variable or use default.
+    Default is 28x28 to match the HAM10000 trained model.
+    """
     v = os.getenv("MODEL_INPUT_SIZE") or os.getenv("MODEL_IMG_SIZE")
     if v and "x" in v:
         w, h = v.lower().split("x", 1)
@@ -87,7 +91,8 @@ def _default_input_size() -> tuple[int, int]:
     if v and v.strip().isdigit():
         n = int(v.strip())
         return n, n
-    return 224, 224
+    # Default to 28x28 to match the trained model (best_model.h5)
+    return 28, 28
 
 
 def _normalization_mode() -> str:
