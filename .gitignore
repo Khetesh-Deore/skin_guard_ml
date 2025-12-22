@@ -2,33 +2,34 @@ data/**
 models/**
 logs/**
 outputs/**
+
+# Notebooks model files - remove from tracking
 notebooks/best_model_stage1.keras
 notebooks/best_model_stage2.keras
 notebooks/best_model.keras
+notebooks/best_model_final.keras
+notebooks/*.keras
+notebooks/*.h5
+
 __pycache__/
-*.h5
-*.png
 *.ipynb_checkpoints/
 .env
 .venv/**
+
+# ML models - all formats
 *.keras
 *.h5
 *.pt
 *.pth
 models/
-notebooks/*.keras
-project_details.txt
 
 # Virtual env
 .venv/
 
-# ML models
-*.keras
-*.h5
-*.pt
-*.pth
-models/
-
 # Cache
 __pycache__/
 .ipynb_checkpoints/
+
+# Large files
+*.ckpt
+*.bin
