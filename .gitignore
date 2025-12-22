@@ -2,7 +2,9 @@ data/**
 models/**
 logs/**
 outputs/**
-notebooks/**
+notebooks/best_model_stage1.keras
+notebooks/best_model_stage2.keras
+notebooks/best_model.keras
 __pycache__/
 *.h5
 *.png
