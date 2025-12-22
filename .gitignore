@@ -18,3 +18,17 @@ __pycache__/
 models/
 notebooks/*.keras
 project_details.txt
+
+# Virtual env
+.venv/
+
+# ML models
+*.keras
+*.h5
+*.pt
+*.pth
+models/
+
+# Cache
+__pycache__/
+.ipynb_checkpoints/
