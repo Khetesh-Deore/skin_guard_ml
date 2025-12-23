@@ -1,0 +1,267 @@
+/**
+ * Feature 10.2 - Option 1: Checkbox List Styles
+ */
+
+.symptom-checkbox-container {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.checkbox-header h3 {
+  margin: 0 0 8px;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.checkbox-header .subtitle {
+  margin: 0 0 16px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.checkbox-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.selected-count {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.expand-btn,
+.clear-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.expand-btn {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #666;
+}
+
+.expand-btn:hover {
+  background: #eee;
+}
+
+.clear-btn {
+  background: none;
+  border: 1px solid #d32f2f;
+  color: #d32f2f;
+}
+
+.clear-btn:hover {
+  background: #d32f2f;
+  color: white;
+}
+
+.error-message {
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.categories-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.category-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.category-toggle:hover {
+  background: #f0f0f0;
+}
+
+.category-toggle.expanded {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.category-name {
+  flex: 1;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.category-count {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.toggle-icon {
+  font-size: 0.7rem;
+  color: #888;
+  transition: transform 0.2s;
+}
+
+.symptoms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  padding: 12px 16px;
+  background: white;
+}
+
+.symptom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.symptom-checkbox:hover:not(.disabled) {
+  background: #f5f5f5;
+}
+
+.symptom-checkbox.checked {
+  background: #e3f2fd;
+}
+
+.symptom-checkbox.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.symptom-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-custom {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.symptom-checkbox.checked .checkbox-custom {
+  background: #1976d2;
+  border-color: #1976d2;
+}
+
+.symptom-checkbox.checked .checkbox-custom::after {
+  content: '✓';
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.symptom-label {
+  font-size: 0.9rem;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.selected-summary {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.selected-summary h4 {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selected-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.remove-tag {
+  background: none;
+  border: none;
+  color: #1565c0;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.remove-tag:hover {
+  opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .symptom-checkbox-container {
+    padding: 16px;
+  }
+
+  .symptoms-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkbox-controls {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .control-buttons {
+    justify-content: flex-end;
+  }
+}

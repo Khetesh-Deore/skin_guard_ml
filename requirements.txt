@@ -1,15 +1,53 @@
-tensorflow==2.16.2
-keras==2.15.0
-numpy==1.26.4
-pandas
-matplotlib
-seaborn
-scikit-learn
-opencv-python==4.8.1.78
-Pillow==10.1.0
-jupyter
+# SkinGuard ML - Root Requirements
+# This file contains all dependencies for the complete project
+# For backend-only dependencies, see Backend/requirements.txt
 
-Flask==3.0.0
-flask-cors==4.0.0
-werkzeug==3.0.1
-python-dotenv==1.0.0
+# ============================================
+# Backend Dependencies
+# ============================================
+
+# Web Framework
+flask>=2.3.0
+flask-cors>=4.0.0
+werkzeug>=2.3.0
+
+# Machine Learning
+tensorflow>=2.12.0
+keras>=2.12.0
+
+# Image Processing
+pillow>=9.5.0
+opencv-python>=4.7.0
+
+# Data Processing
+numpy>=1.23.0
+pandas>=2.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# ============================================
+# Development & Testing
+# ============================================
+pytest>=7.3.0
+pytest-cov>=4.1.0
+
+# ============================================
+# Optional: Model Training Dependencies
+# ============================================
+# Uncomment if you need to train/retrain the model
+
+# scikit-learn>=1.2.0
+# matplotlib>=3.7.0
+# seaborn>=0.12.0
+# tensorboard>=2.12.0
+# albumentations>=1.3.0
+
+# ============================================
+# Optional: Production Dependencies
+# ============================================
+# Uncomment for production deployment
+
+# gunicorn>=21.0.0
+# gevent>=23.0.0

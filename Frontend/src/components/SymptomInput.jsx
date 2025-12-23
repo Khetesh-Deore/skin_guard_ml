@@ -15,14 +15,14 @@ import './SymptomInput.css';
 
 /**
  * Feature 10.3 - Symptom List Organization
- * Comprehensive symptoms aligned with HAM10000 skin diseases:
- * - akiec: Actinic keratoses
- * - bcc: Basal cell carcinoma  
- * - bkl: Benign keratosis-like lesions
- * - df: Dermatofibroma
- * - mel: Melanoma
- * - nv: Melanocytic nevi
- * - vasc: Vascular lesions
+ * 
+ * Categories organized for easy user selection:
+ * - Skin Appearance: Visual changes to the skin
+ * - Sensations: How the skin feels
+ * - Texture: Changes in skin texture
+ * - Other: Additional symptoms
+ * 
+ * Extended with disease-specific symptoms for better matching.
  */
 const SYMPTOM_CATEGORIES = {
   "Skin Appearance": [
@@ -36,11 +36,7 @@ const SYMPTOM_CATEGORIES = {
     "mole_change",
     "irregular_border",
     "asymmetric_shape",
-    "color_variation",
-    "flat_lesion",
-    "raised_lesion",
-    "waxy_appearance",
-    "shiny_appearance"
+    "color_variation"
   ],
   "Sensations": [
     "itching",
@@ -50,38 +46,25 @@ const SYMPTOM_CATEGORIES = {
     "numbness",
     "tingling"
   ],
-  "Texture Changes": [
+  "Texture": [
     "dry_skin",
+    "oily_skin",
     "rough_skin",
-    "scaly_skin",
     "thickened_skin",
+    "scaly_skin",
     "crusty_patches",
     "pearly_bump",
-    "hard_lump",
-    "firm_nodule",
-    "smooth_surface"
-  ],
-  "Wound & Bleeding": [
-    "bleeding",
-    "oozing",
-    "crusting",
-    "sore_that_wont_heal",
-    "ulceration",
-    "scabbing"
-  ],
-  "Size & Growth": [
-    "rapid_growth",
-    "increasing_size",
-    "large_area",
-    "multiple_lesions",
-    "spreading"
+    "hard_lump"
   ],
   "Other": [
+    "oozing",
+    "crusting",
     "swelling",
-    "visible_blood_vessels",
-    "pigment_changes",
-    "new_growth",
-    "changing_mole"
+    "bleeding",
+    "rapid_growth",
+    "spreading",
+    "sore_that_wont_heal",
+    "ulceration"
   ]
 };
 

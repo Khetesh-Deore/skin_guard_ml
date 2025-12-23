@@ -10,7 +10,8 @@ notebooks/best_model.keras
 notebooks/best_model_final.keras
 notebooks/*.keras
 notebooks/*.h5
-
+notebooks/new.py
+notebooks/04_train.ipynb
 __pycache__/
 *.ipynb_checkpoints/
 .env
@@ -33,3 +34,5 @@ __pycache__/
 # Large files
 *.ckpt
 *.bin
+
+project_details.txt

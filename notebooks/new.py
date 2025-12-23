@@ -1,8 +1,8 @@
 """
-SIMPLIFIED SKIN DISEASE CLASSIFIER - SINGLE MODEL
-For faster training or memory constraints
-Expected Accuracy: 91-94%
-Training Time: 45-90 minutes
+SIMPLIFIED SKIN DISEASE CLASSIFIER - SINGLE MODEL (UPDATED & FIXED)
+Expected Accuracy: 91–94%
+GPU: RTX 2050 (Mixed Precision Enabled)
+TensorFlow: 2.13 (Windows-safe)
 """
 
 import os
@@ -13,17 +13,19 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.applications import EfficientNetB1
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Configuration
+# ===============================
+# CONFIGURATION
+# ===============================
 IMG_SIZE = 224
 BATCH_SIZE = 16
 EPOCHS = 100
+
 TRAIN_DIR = 'data/SkinDisease/SkinDisease/Train'
-TEST_DIR = 'data/SkinDisease/SkinDisease/Test'
+TEST_DIR  = 'data/SkinDisease/SkinDisease/Test'
 
 CLASSES = [
     'Acne', 'Actinic_Keratosis', 'Benign_Tumors', 'Bullous',
@@ -34,14 +36,23 @@ CLASSES = [
     'Vitiligo', 'Warts'
 ]
 
-# GPU Setup
+NUM_CLASSES = len(CLASSES)
+
+# ===============================
+# GPU & MIXED PRECISION SETUP
+# ===============================
 gpus = tf.config.list_physical_devices('GPU')
 if gpus:
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
     tf.keras.mixed_precision.set_global_policy('mixed_float16')
 
-# Data Generators with Heavy Augmentation
+print("✅ GPU Enabled:", bool(gpus))
+print("✅ Mixed Precision:", tf.keras.mixed_precision.global_policy())
+
+# ===============================
+# DATA GENERATORS
+# ===============================
 train_datagen = ImageDataGenerator(
     rescale=1./255,
     rotation_range=25,
@@ -52,12 +63,11 @@ train_datagen = ImageDataGenerator(
     horizontal_flip=True,
     vertical_flip=True,
     brightness_range=[0.8, 1.2],
-    validation_split=0.15  # 15% for validation
+    validation_split=0.15
 )
 
 test_datagen = ImageDataGenerator(rescale=1./255)
 
-# Load data
 train_generator = train_datagen.flow_from_directory(
     TRAIN_DIR,
     target_size=(IMG_SIZE, IMG_SIZE),
@@ -84,48 +94,67 @@ test_generator = test_datagen.flow_from_directory(
     shuffle=False
 )
 
-# Calculate class weights
+# ===============================
+# CLASS WEIGHTS (FIXED)
+# ===============================
 class_counts = np.bincount(train_generator.classes)
-total = len(train_generator.classes)
-class_weights = {i: total / (len(CLASSES) * count) for i, count in enumerate(class_counts)}
+total_samples = np.sum(class_counts)
 
-# Build Model
+class_weights = {
+    i: float(total_samples / (NUM_CLASSES * class_counts[i]))
+    for i in range(NUM_CLASSES)
+}
+
+# ===============================
+# MODEL DEFINITION
+# ===============================
 def create_model():
-    base = EfficientNetB1(
+    base_model = EfficientNetB1(
         include_top=False,
         weights='imagenet',
         input_shape=(IMG_SIZE, IMG_SIZE, 3)
     )
-    
-    # Freeze 80% of base layers
-    for layer in base.layers[:int(len(base.layers) * 0.8)]:
+
+    # Freeze first 80%
+    for layer in base_model.layers[:int(0.8 * len(base_model.layers))]:
         layer.trainable = False
-    
-    model = models.Sequential([
-        base,
-        layers.GlobalAveragePooling2D(),
-        layers.BatchNormalization(),
-        layers.Dropout(0.5),
-        layers.Dense(512, activation='relu'),
-        layers.BatchNormalization(),
-        layers.Dropout(0.4),
-        layers.Dense(256, activation='relu'),
-        layers.Dropout(0.3),
-        layers.Dense(len(CLASSES), activation='softmax', dtype='float32')
-    ])
-    
-    return model
+
+    x = base_model.output
+    x = layers.GlobalAveragePooling2D()(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dropout(0.5)(x)
+
+    x = layers.Dense(512, activation='relu')(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dropout(0.4)(x)
+
+    x = layers.Dense(256, activation='relu')(x)
+    x = layers.Dropout(0.3)(x)
+
+    outputs = layers.Dense(
+        NUM_CLASSES,
+        activation='softmax',
+        dtype='float32'   # IMPORTANT for mixed precision
+    )(x)
+
+    return models.Model(inputs=base_model.input, outputs=outputs)
 
 model = create_model()
 
-# Compile
+# ===============================
+# COMPILE
+# ===============================
 model.compile(
-    optimizer=keras.optimizers.Adam(1e-4),
+    optimizer=keras.optimizers.Adam(learning_rate=1e-4),
     loss='categorical_crossentropy',
     metrics=['accuracy']
 )
 
-# Callbacks
+model.summary()
+
+# ===============================
+# CALLBACKS (JSON BUG FIXED)
+# ===============================
 callbacks = [
     EarlyStopping(
         monitor='val_loss',
@@ -141,94 +170,101 @@ callbacks = [
         verbose=1
     ),
     ModelCheckpoint(
-        'best_model.h5',
+        filepath='best_model.keras',   # ✅ FIX
         monitor='val_accuracy',
         save_best_only=True,
         verbose=1
     )
 ]
 
-# Train
-print("🚀 Starting training...")
+# ===============================
+# TRAINING
+# ===============================
+print("\n🚀 Starting Training...\n")
+
 history = model.fit(
     train_generator,
     validation_data=val_generator,
     epochs=EPOCHS,
-    callbacks=callbacks,
-    class_weight=class_weights
+    class_weight=class_weights,
+    callbacks=callbacks
 )
 
-# Evaluate on test set
-print("\n🧪 Evaluating on test set...")
+# ===============================
+# EVALUATION
+# ===============================
+print("\n🧪 Evaluating on Test Set...")
 test_loss, test_acc = model.evaluate(test_generator)
-print(f"Test Accuracy: {test_acc*100:.2f}%")
+print(f"✅ Test Accuracy: {test_acc * 100:.2f}%")
 
-# Predictions
+# ===============================
+# REPORTS
+# ===============================
 y_pred = model.predict(test_generator)
 y_pred_classes = np.argmax(y_pred, axis=1)
 y_true = test_generator.classes
 
-# Classification Report
-print("\n📋 Classification Report:")
+print("\n📋 Classification Report:\n")
 print(classification_report(y_true, y_pred_classes, target_names=CLASSES))
 
-# Confusion Matrix
 cm = confusion_matrix(y_true, y_pred_classes)
+
 plt.figure(figsize=(16, 14))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
-            xticklabels=CLASSES, yticklabels=CLASSES)
-plt.title('Confusion Matrix')
-plt.ylabel('True Label')
-plt.xlabel('Predicted Label')
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt='d',
+    cmap='Blues',
+    xticklabels=CLASSES,
+    yticklabels=CLASSES
+)
+plt.title("Confusion Matrix")
 plt.xticks(rotation=45, ha='right')
 plt.tight_layout()
-plt.savefig('confusion_matrix.png', dpi=150)
+plt.savefig("confusion_matrix.png", dpi=150)
+plt.close()
 
-# Plot training history
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+# ===============================
+# TRAINING CURVES
+# ===============================
+plt.figure(figsize=(14, 5))
 
-ax1.plot(history.history['accuracy'], label='Train')
-ax1.plot(history.history['val_accuracy'], label='Validation')
-ax1.set_title('Model Accuracy')
-ax1.set_xlabel('Epoch')
-ax1.set_ylabel('Accuracy')
-ax1.legend()
-ax1.grid(True)
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Train')
+plt.plot(history.history['val_accuracy'], label='Validation')
+plt.title("Accuracy")
+plt.legend()
+plt.grid(True)
 
-ax2.plot(history.history['loss'], label='Train')
-ax2.plot(history.history['val_loss'], label='Validation')
-ax2.set_title('Model Loss')
-ax2.set_xlabel('Epoch')
-ax2.set_ylabel('Loss')
-ax2.legend()
-ax2.grid(True)
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Train')
+plt.plot(history.history['val_loss'], label='Validation')
+plt.title("Loss")
+plt.legend()
+plt.grid(True)
 
 plt.tight_layout()
-plt.savefig('training_history.png', dpi=150)
+plt.savefig("training_history.png", dpi=150)
+plt.close()
 
-print("\n✅ Training complete! Model saved as 'best_model.h5'")
+print("\n✅ Training Complete! Model saved as best_model.keras")
 
-# Inference function
+# ===============================
+# INFERENCE FUNCTION
+# ===============================
 def predict_image(image_path, model):
-    img = keras.preprocessing.image.load_img(image_path, target_size=(IMG_SIZE, IMG_SIZE))
-    img_array = keras.preprocessing.image.img_to_array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
-    
-    prediction = model.predict(img_array, verbose=0)
-    predicted_class = CLASSES[np.argmax(prediction)]
-    confidence = np.max(prediction) * 100
-    
-    print(f"Predicted: {predicted_class}")
-    print(f"Confidence: {confidence:.2f}%")
-    
-    # Top 3 predictions
-    top3_idx = np.argsort(prediction[0])[-3:][::-1]
-    print("\nTop 3 predictions:")
-    for idx in top3_idx:
-        print(f"  {CLASSES[idx]}: {prediction[0][idx]*100:.2f}%")
-    
-    return predicted_class, confidence
+    img = keras.preprocessing.image.load_img(
+        image_path,
+        target_size=(IMG_SIZE, IMG_SIZE)
+    )
+    img = keras.preprocessing.image.img_to_array(img) / 255.0
+    img = np.expand_dims(img, axis=0)
 
-# Usage example:
-# loaded_model = keras.models.load_model('best_model.h5')
-# predict_image('path/to/test/image.jpg', loaded_model)
+    preds = model.predict(img, verbose=0)[0]
+    top3 = preds.argsort()[-3:][::-1]
+
+    print("\n🔍 Prediction Result:")
+    for i in top3:
+        print(f"{CLASSES[i]}: {preds[i] * 100:.2f}%")
+
+    return CLASSES[top3[0]], preds[top3[0]]
