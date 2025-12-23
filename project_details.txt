@@ -1,0 +1,928 @@
+Skin Guard Pro: Complete Implementation Blueprint
+Project Architecture Overview
+skin-guard-pro/
+├── backend/
+│   ├── app.py                 # Flask application entry point
+│   ├── config.py              # Configuration management
+│   ├── requirements.txt       # Python dependencies
+│   ├── models/
+│   │   └── trained_model.h5   # Your pre-trained model
+│   ├── modules/
+│   │   ├── __init__.py
+│   │   ├── image_processor.py     # Image preprocessing
+│   │   ├── predictor.py           # ML prediction logic
+│   │   ├── symptom_matcher.py     # Symptom matching
+│   │   ├── severity_analyzer.py   # Severity assessment
+│   │   └── recommendation_engine.py # Recommendation generator
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── validators.py          # Input validation
+│   │   └── constants.py           # Disease mappings, symptoms list
+│   └── routes/
+│       ├── __init__.py
+│       └── predict_routes.py      # API endpoints
+├── frontend/
+│   ├── package.json
+│   ├── public/
+│   └── src/
+│       ├── App.jsx
+│       ├── components/
+│       │   ├── ImageUpload.jsx
+│       │   ├── SymptomInput.jsx
+│       │   ├── ResultDisplay.jsx
+│       │   └── LoadingSpinner.jsx
+│       ├── services/
+│       │   └── api.js
+│       └── styles/
+└─
+PHASE 1: BACKEND DEVELOPMENT
+Feature 1: Flask Application Setup & Configuration
+Purpose: Create the foundation for your API server
+Step-by-Step Implementation:
+1.1 Environment Setup
+Steps:
+1. Create project directory structure
+2. Set up Python virtual environment
+3. Install dependencies
+4. Configure CORS for React frontend
+Key Components:
+config.py breakdown:
+
+Environment detection (development/production)
+Upload folder configuration
+Allowed file extensions (.jpg, .jpeg, .png)
+Maximum file size limit (5MB recommended)
+Model path configuration
+API rate limiting settings
+
+app.py breakdown:
+
+Flask app initialization
+CORS configuration (allow React dev server at localhost:3000)
+Error handlers (404, 500, 413 for file too large)
+Health check endpoint
+Graceful shutdown handling
+
+requirements.txt must include:
+Flask==3.0.0
+flask-cors==4.0.0
+tensorflow==2.15.0 (or pytorch==2.1.0)
+opencv-python==4.8.1
+numpy==1.24.3
+Pillow==10.1.0
+werkzeug==3.0.1
+python-dotenv==1.0.0
+
+Feature 2: Image Processing Module
+Purpose: Standardize and prepare uploaded images for ML model
+Module: image_processor.py
+2.1 Input Validation Layer
+Responsibilities:
+- Verify file exists and is valid
+- Check file extension (jpg, jpeg, png only)
+- Validate file size (< 5MB)
+- Verify it's actually an image (not renamed malicious file)
+- Check image isn't corrupted
+Implementation Details:
+
+Use Pillow to verify image integrity
+Check MIME type matches extension
+Validate image has proper dimensions (not 0x0)
+Return clear error messages for each validation failure
+
+2.2 Image Loading
+Responsibilities:
+- Read image from uploaded file object
+- Convert to RGB format (handle RGBA, grayscale)
+- Preserve aspect ratio metadata for later
+Edge Cases to Handle:
+
+EXIF orientation (rotate if needed)
+Grayscale images → convert to RGB
+RGBA images → remove alpha channel
+Extremely large images → warn but process
+
+2.3 Preprocessing Pipeline
+Steps in order:
+1. Resize to model input size (e.g., 224x224 or 299x299)
+2. Normalize pixel values (0-255 → 0-1 or -1 to 1)
+3. Apply same preprocessing as training data
+4. Add batch dimension [1, height, width, channels]
+5. Convert to float32 dtype
+Critical Requirements:
+
+Must match training preprocessing exactly
+Use same interpolation method (BILINEAR recommended)
+Apply same normalization (ImageNet stats if used during training)
+Maintain proper data type (float32)
+
+Methods to Expose:
+process_image(file_object) → preprocessed_array
+validate_image(file_object) → (is_valid, error_message)
+
+Feature 3: ML Prediction Module
+Purpose: Load model and generate disease predictions
+Module: predictor.py
+3.1 Model Loading (On Application Startup)
+Steps:
+1. Load model from saved path
+2. Compile if needed (set to inference mode)
+3. Warm up model with dummy prediction
+4. Cache model in memory
+Best Practices:
+
+Load model once at startup, not per request
+Use global variable or singleton pattern
+Set TensorFlow/PyTorch to inference mode
+Disable gradient computation
+If GPU available, move model to GPU
+
+3.2 Prediction Engine
+Input: preprocessed_image_array
+Process:
+1. Run model.predict() or model.forward()
+2. Get probability distribution across all classes
+3. Extract top prediction and confidence score
+4. Get top 3 predictions for transparency
+5. Apply confidence threshold (e.g., > 0.6 for "confident")
+Output: {
+  "predicted_disease": "eczema",
+  "confidence": 0.85,
+  "top_predictions": [
+    {"disease": "eczema", "confidence": 0.85},
+    {"disease": "psoriasis", "confidence": 0.10},
+    {"disease": "dermatitis", "confidence": 0.03}
+  ]
+}
+Edge Cases:
+
+Low confidence (<0.6) → flag as "uncertain"
+Multiple high probabilities → flag as "needs expert review"
+Unexpected model output → return error gracefully
+
+3.3 Class Mapping
+Purpose: Map model output indices to disease names
+
+Create disease_mapping.json:
+{
+  "0": "Acne",
+  "1": "Eczema",
+  "2": "Melanoma",
+  ...
+}
+Methods to Expose:
+predict_disease(image_array) → prediction_result
+get_confidence_level(confidence_score) → "high|medium|low"
+
+Feature 4: Symptom Matching Module
+Purpose: Cross-validate AI prediction with user-reported symptoms
+Module: symptom_matcher.py
+4.1 Symptom Database (In-Memory Dictionary)
+pythonDISEASE_SYMPTOMS = {
+    "Acne": {
+        "common": ["pimples", "blackheads", "whiteheads", "oily_skin"],
+        "optional": ["redness", "inflammation", "scarring"],
+        "severity_indicators": ["cysts", "nodules", "widespread"]
+    },
+    "Eczema": {
+        "common": ["itching", "redness", "dry_skin", "patches"],
+        "optional": ["oozing", "crusting", "thickened_skin"],
+        "severity_indicators": ["bleeding", "infection_signs", "large_area"]
+    },
+    # ... all other diseases
+}
+```
+
+#### 4.2 Matching Algorithm
+```
+Input: 
+- predicted_disease
+- user_symptoms (list of strings)
+
+Process:
+1. Get symptom profile for predicted disease
+2. Count matches with user symptoms
+3. Calculate match percentage
+4. Check for contradictory symptoms
+5. Adjust confidence based on match rate
+
+Scoring:
+- 80%+ match → "Strong match - symptoms align with prediction"
+- 50-79% match → "Moderate match - some symptoms align"
+- <50% match → "Weak match - consider other conditions"
+- Contradictory symptoms → "Warning: symptoms don't match prediction"
+```
+
+#### 4.3 Symptom Normalization
+```
+Handle user input variations:
+- "itchy skin" → "itching"
+- "red spots" → "redness"
+- "very itchy" → "itching" + severity flag
+
+Use fuzzy matching or keyword extraction
+```
+
+**Methods to Expose:**
+```
+match_symptoms(disease, symptoms) → match_result
+normalize_symptom(raw_symptom) → normalized_symptom
+calculate_alignment_score(disease, symptoms) → percentage
+```
+
+---
+
+### Feature 5: Severity Analysis Module
+
+**Purpose:** Assess how serious the condition appears
+
+**Module: severity_analyzer.py**
+
+#### 5.1 Multi-Factor Severity Assessment
+```
+Factors to Consider:
+1. Model confidence score
+2. Predicted disease baseline severity
+3. User symptom intensity keywords
+4. Symptom count
+5. Presence of severe indicators
+5.2 Disease Severity Profiles
+pythonDISEASE_SEVERITY_BASE = {
+    "Acne": {
+        "baseline": "mild",
+        "can_escalate_to": "moderate",
+        "severe_if": ["nodules", "cysts", "scarring", "widespread"]
+    },
+    "Melanoma": {
+        "baseline": "severe",
+        "can_escalate_to": "severe",
+        "severe_if": ["irregular_border", "large_size", "color_variation"]
+    },
+    # ... all diseases
+}
+```
+
+#### 5.3 Severity Scoring Logic
+```
+Calculation:
+1. Start with disease baseline (mild/moderate/severe)
+2. Check for severe indicator symptoms → +1 level
+3. Check symptom intensity keywords ("very", "extreme") → +1 level
+4. Check affected area keywords ("widespread", "large") → +1 level
+5. Low model confidence + severe symptoms → flag for review
+
+Output Levels:
+- "Mild" → Self-care may be sufficient
+- "Moderate" → Consider consulting doctor
+- "Severe" → Seek medical attention soon
+- "Critical" → Immediate medical attention required
+```
+
+#### 5.4 Urgency Flags
+```
+Red Flags (immediate attention):
+- Melanoma predicted with high confidence
+- "bleeding" + "infection" symptoms
+- "rapid_spread" mentioned
+- "severe_pain" present
+
+Yellow Flags (consult doctor):
+- Persistent symptoms mentioned
+- Moderate severity + multiple symptoms
+- Uncertain prediction but concerning symptoms
+```
+
+**Methods to Expose:**
+```
+analyze_severity(disease, confidence, symptoms) → severity_result
+check_urgency_flags(disease, symptoms) → urgency_level
+get_severity_explanation(severity_level) → explanation_text
+
+Feature 6: Recommendation Engine
+Purpose: Generate actionable advice based on results
+Module: recommendation_engine.py
+6.1 Recommendation Database Structure
+pythonRECOMMENDATIONS = {
+    "Acne": {
+        "mild": {
+            "general_advice": "Maintain good skincare hygiene...",
+            "home_remedies": [
+                "Wash face twice daily with gentle cleanser",
+                "Use non-comedogenic moisturizers",
+                "Avoid touching face frequently"
+            ],
+            "precautions": [
+                "Don't pop or squeeze pimples",
+                "Use oil-free makeup products",
+                "Change pillowcases regularly"
+            ],
+            "when_to_see_doctor": "If acne persists for more than 3 months or worsens"
+        },
+        "moderate": { ... },
+        "severe": { ... }
+    },
+    # ... all diseases × severity levels
+}
+```
+
+#### 6.2 Personalization Logic
+```
+Input:
+- disease
+- severity_level
+- user_symptoms
+- confidence_score
+
+Customization:
+1. Get base recommendations for disease + severity
+2. Add symptom-specific advice
+3. Adjust urgency based on confidence
+4. Add disclaimers if low confidence
+5. Include warning for severe cases
+6.3 Output Structure
+json{
+  "general_advice": "Clear explanation of condition",
+  "immediate_care": ["Step 1", "Step 2"],
+  "home_remedies": ["Remedy 1", "Remedy 2"],
+  "precautions": ["Avoid X", "Do Y"],
+  "lifestyle_tips": ["Diet advice", "Stress management"],
+  "when_to_see_doctor": "Specific conditions requiring medical visit",
+  "disclaimer": "This is not a medical diagnosis...",
+  "urgency_level": "consult_soon" // or "routine" or "urgent"
+}
+```
+
+#### 6.4 Safety & Legal Considerations
+```
+Always Include:
+- Medical disclaimer (not a substitute for professional diagnosis)
+- Encouragement to see doctor if symptoms persist
+- Warning against self-medication for severe cases
+- Note about AI limitations
+
+Never Include:
+- Specific medication names or dosages
+- Diagnosis statements ("You have...")
+- Treatment promises
+- Medical procedures
+```
+
+**Methods to Expose:**
+```
+generate_recommendations(disease, severity, symptoms) → recommendations
+get_disclaimer() → standard_disclaimer_text
+format_recommendations(raw_recommendations) → formatted_output
+```
+
+---
+
+### Feature 7: API Routes & Request Handling
+
+**Module: routes/predict_routes.py**
+
+#### 7.1 Main Prediction Endpoint
+
+**Route:** `POST /api/predict`
+
+**Request Format:**
+```
+Content-Type: multipart/form-data
+
+Fields:
+- image: file (required)
+- symptoms: string (optional, comma-separated)
+```
+
+**Processing Flow:**
+```
+1. Validate request
+   ↓
+2. Validate & extract image file
+   ↓
+3. Parse symptoms (if provided)
+   ↓
+4. Image preprocessing
+   ↓
+5. ML prediction
+   ↓
+6. Symptom matching (if symptoms provided)
+   ↓
+7. Severity analysis
+   ↓
+8. Generate recommendations
+   ↓
+9. Format response
+   ↓
+10. Clean up temporary files
+    ↓
+11. Return JSON response
+Response Format:
+json{
+  "success": true,
+  "prediction": {
+    "disease": "Eczema",
+    "confidence": 0.87,
+    "confidence_level": "high",
+    "alternative_possibilities": [
+      {"disease": "Dermatitis", "confidence": 0.08},
+      {"disease": "Psoriasis", "confidence": 0.03}
+    ]
+  },
+  "symptom_analysis": {
+    "match_percentage": 85,
+    "alignment": "strong",
+    "matched_symptoms": ["itching", "redness", "dry_skin"],
+    "message": "Your symptoms strongly align with the prediction"
+  },
+  "severity": {
+    "level": "moderate",
+    "urgency": "consult_doctor",
+    "explanation": "Condition shows moderate severity..."
+  },
+  "recommendations": {
+    "general_advice": "...",
+    "immediate_care": [...],
+    "home_remedies": [...],
+    "precautions": [...],
+    "when_to_see_doctor": "..."
+  },
+  "disclaimer": "This is an AI-powered assessment..."
+}
+Error Response Format:
+json{
+  "success": false,
+  "error": {
+    "code": "INVALID_IMAGE",
+    "message": "Uploaded file is not a valid image",
+    "details": "File type must be jpg, jpeg, or png"
+  }
+}
+7.2 Additional Support Endpoints
+Health Check: GET /api/health
+jsonResponse: {
+  "status": "healthy",
+  "model_loaded": true,
+  "version": "1.0.0"
+}
+Supported Diseases: GET /api/diseases
+jsonResponse: {
+  "diseases": ["Acne", "Eczema", ...],
+  "count": 15
+}
+Available Symptoms: GET /api/symptoms
+jsonResponse: {
+  "symptoms": ["itching", "redness", ...],
+  "count": 45
+}
+```
+
+#### 7.3 Error Handling Strategy
+```
+Error Types to Handle:
+
+1. Validation Errors (400)
+   - No image uploaded
+   - Invalid file type
+   - File too large
+   - Corrupted image
+
+2. Processing Errors (500)
+   - Image preprocessing failed
+   - Model prediction error
+   - Unexpected exception
+
+3. Rate Limiting (429)
+   - Too many requests from same IP
+
+Response Structure:
+- Always return JSON
+- Include error code for client handling
+- Provide user-friendly message
+- Log detailed error server-side
+```
+
+#### 7.4 Request Validation
+```
+Pre-Processing Checks:
+1. Request method is POST
+2. Content-Type is multipart/form-data
+3. 'image' field exists in request.files
+4. File has allowed extension
+5. File size < MAX_FILE_SIZE
+6. Optional: symptoms field is string (if present)
+
+Validation Helper:
+def validate_prediction_request(request):
+    if 'image' not in request.files:
+        return False, "No image uploaded"
+    
+    file = request.files['image']
+    if file.filename == '':
+        return False, "Empty filename"
+    
+    if not allowed_file(file.filename):
+        return False, "Invalid file type"
+    
+    return True, None
+```
+
+---
+
+## PHASE 2: FRONTEND DEVELOPMENT
+
+### Feature 8: React Application Setup
+
+**Purpose:** Create user interface for image upload and results display
+
+#### 8.1 Project Initialization
+```
+Steps:
+1. Create React app (Vite recommended for speed)
+2. Install dependencies
+3. Set up folder structure
+4. Configure API base URL
+Dependencies Required:
+json{
+  "axios": "^1.6.0",
+  "react": "^18.2.0",
+  "react-dom": "^18.2.0"
+}
+```
+
+**Environment Configuration (.env):**
+```
+VITE_API_BASE_URL=http://localhost:5000/api
+```
+
+---
+
+### Feature 9: Image Upload Component
+
+**Component: ImageUpload.jsx**
+
+#### 9.1 Component Responsibilities
+```
+- File input field with drag-and-drop
+- Image preview before upload
+- File type validation
+- File size validation
+- Upload progress indicator
+- Clear/reset functionality
+
+9.2 Component State Management
+javascriptState Variables:
+- selectedFile: null | File
+- previewUrl: null | string
+- isUploading: boolean
+- uploadError: null | string
+```
+
+#### 9.3 Drag-and-Drop Implementation
+```
+Features:
+1. Highlight drop zone on dragover
+2. Accept dropped file
+3. Validate file on drop
+4. Show preview immediately
+5. Prevent default browser behavior
+
+Validation:
+- Check file type (image/jpeg, image/png)
+- Check file size (< 5MB)
+- Show error if validation fails
+```
+
+#### 9.4 File Selection Flow
+```
+1. User clicks "Choose File" or drags file
+   ↓
+2. Validate file type and size
+   ↓
+3. If valid:
+   - Store file in state
+   - Generate preview URL (URL.createObjectURL)
+   - Enable submit button
+   ↓
+4. If invalid:
+   - Show error message
+   - Clear any previous selection
+   - Disable submit button
+```
+
+#### 9.5 Image Preview
+```
+Implementation:
+- Display thumbnail of selected image
+- Show file name and size
+- Include "Remove" button to clear selection
+- Revoke object URL on component unmount (prevent memory leak)
+Props Interface:
+javascript{
+  onImageSelect: (file) => void,
+  maxSizeInMB: number,
+  acceptedFormats: string[]
+}
+```
+
+---
+
+### Feature 10: Symptom Input Component
+
+**Component: SymptomInput.jsx**
+
+#### 10.1 Component Responsibilities
+```
+- Multi-select symptom input
+- Predefined symptom list
+- Custom symptom entry
+- Selected symptoms display
+- Clear all functionality
+```
+
+#### 10.2 Input Methods
+```
+Option 1: Checkbox List
+- Display common symptoms as checkboxes
+- User can check multiple
+- Group symptoms by category (skin appearance, sensation, etc.)
+
+Option 2: Tag Input (Recommended)
+- Dropdown with autocomplete
+- Selected symptoms appear as removable tags
+- Type to filter symptoms
+- Add custom symptoms (with validation)
+
+
+10.3 Symptom List Organization
+javascriptSYMPTOM_CATEGORIES = {
+  "Skin Appearance": [
+    "redness", "patches", "spots", "bumps", "scaling"
+  ],
+  "Sensations": [
+    "itching", "burning", "pain", "tenderness"
+  ],
+  "Texture": [
+    "dry_skin", "oily_skin", "rough_skin", "thickened_skin"
+  ],
+  "Other": [
+    "oozing", "crusting", "swelling", "bleeding"
+  ]
+}
+
+
+10.4 Component State
+javascriptState Variables:
+- selectedSymptoms: string[]
+- searchTerm: string
+- showDropdown: boolean
+```
+
+#### 10.5 Validation
+```
+Rules:
+- At least 0 symptoms (optional field)
+- Maximum 10 symptoms (prevent spam)
+- Each symptom 2-30 characters
+- No duplicate symptoms
+- Sanitize custom inputs (remove special chars)
+Props Interface:
+javascript{
+  onSymptomsChange: (symptoms: string[]) => void,
+  maxSymptoms: number,
+  predefinedSymptoms: string[]
+}
+
+Feature 11: API Service Layer
+Module: services/api.js
+11.1 API Client Setup
+javascriptPurpose:
+- Centralize all API calls
+- Handle request/response formatting
+- Manage errors consistently
+- Add request interceptors if needed
+
+Configuration:
+- Base URL from environment variable
+- Default headers
+- Timeout settings
+- Error handling
+
+11.2 Prediction API Call
+javascriptFunction: predictDisease(imageFile, symptoms)
+
+Steps:
+1. Create FormData object
+2. Append image file
+3. Append symptoms (comma-separated string)
+4. Set Content-Type to multipart/form-data
+5. POST to /api/predict
+6. Handle response
+7. Handle errors
+
+Error Handling:
+- Network errors (no internet)
+- Server errors (500)
+- Validation errors (400)
+- Timeout errors
+- Parse response properly
+
+
+11.3 Response Processing
+javascriptProcess:
+1. Check response.success flag
+2. If success:
+   - Extract prediction data
+   - Extract recommendations
+   - Return formatted data
+3. If error:
+   - Extract error message
+   - Throw formatted error
+   - Let caller handle display
+
+
+11.4 Helper Functions
+javascriptFunctions to Create:
+- formatError(error) → user-friendly message
+- uploadWithProgress(file, onProgress) → track upload %
+- validateResponse(response) → check structure
+- retryRequest(request, maxRetries) → retry on failure
+API Service Interface:
+javascript{
+  predictDisease: (file, symptoms) => Promise<PredictionResult>,
+  getSupportedDiseases: () => Promise<string[]>,
+  getAvailableSymptoms: () => Promise<string[]>,
+  checkHealth: () => Promise<boolean>
+}
+```
+
+---
+
+### Feature 12: Results Display Component
+
+**Component: ResultDisplay.jsx**
+
+#### 12.1 Component Responsibilities
+```
+- Display prediction results clearly
+- Show confidence visualization
+- Display symptom analysis
+- Show severity with color coding
+- Display recommendations organized by section
+- Include disclaimer prominently
+- Provide "New Analysis" button
+```
+
+#### 12.2 Layout Structure
+```
+Section 1: Prediction Summary Card
+├── Disease name (large, bold)
+├── Confidence bar/percentage
+├── Confidence level badge (High/Medium/Low)
+└── Alternative possibilities (collapsible)
+
+Section 2: Symptom Alignment (if symptoms provided)
+├── Match percentage
+├── Matched symptoms list
+└── Alignment message
+
+Section 3: Severity Assessment
+├── Severity level (color-coded badge)
+├── Urgency indicator
+└── Severity explanation
+
+Section 4: Recommendations (Expandable Sections)
+├── General Advice
+├── Immediate Care Steps
+├── Home Remedies
+├── Precautions
+├── Lifestyle Tips
+└── When to See a Doctor (highlighted)
+
+Section 5: Disclaimer
+└── Medical disclaimer text (always visible)
+
+Actions:
+└── "Analyze Another Image" button
+```
+
+#### 12.3 Confidence Visualization
+```
+Visual Options:
+1. Progress bar (0-100%)
+2. Color coding:
+   - Green (>80%): High confidence
+   - Yellow (60-80%): Medium confidence
+   - Orange (<60%): Low confidence
+3. Icon indicators
+4. Percentage text
+```
+
+#### 12.4 Severity Color Coding
+```
+Visual System:
+- Mild: Blue/Green
+- Moderate: Yellow/Orange
+- Severe: Red
+- Critical: Dark Red with warning icon
+
+Urgency Badges:
+- "Routine care": Gray
+- "Consult doctor": Yellow
+- "Seek attention soon": Orange
+- "Immediate attention": Red with pulse animation
+```
+
+#### 12.5 Responsive Design Considerations
+```
+Mobile (<768px):
+- Stack sections vertically
+- Full-width cards
+- Larger touch targets
+- Collapsible sections by default
+
+Tablet (768-1024px):
+- Two-column layout for recommendations
+- Balanced card sizes
+
+Desktop (>1024px):
+- Three-column layout where appropriate
+- Sidebar for quick actions
+- More whitespace
+Props Interface:
+javascript{
+  prediction: PredictionResult,
+  onNewAnalysis: () => void,
+  loading: boolean
+}
+
+Feature 13: Main Application Flow
+Component: App.jsx
+13.1 Application State Management
+javascriptState Variables:
+- currentStep: 'upload' | 'analyzing' | 'results'
+- selectedImage: File | null
+- selectedSymptoms: string[]
+- predictionResults: PredictionResult | null
+- error: string | null
+- isLoading: boolean
+```
+
+#### 13.2 User Flow State Machine
+```
+State: 'upload'
+├── Show ImageUpload component
+├── Show SymptomInput component
+├── Show "Analyze" button (disabled until image selected)
+└── On submit → transition to 'analyzing'
+
+State: 'analyzing'
+├── Show loading spinner
+├── Show progress message
+├── Call API
+├── On success → transition to 'results'
+└── On error → show error, back to 'upload'
+
+State: 'results'
+├── Show ResultDisplay component
+├── Show "New Analysis" button
+└── On new analysis → clear data, back to 'upload'
+```
+
+#### 13.3 Error Handling & User Feedback
+```
+Error Scenarios:
+1. Network failure
+   - Message: "Unable to connect. Check your internet."
+   - Action: Retry button
+
+2. Server error
+   - Message: "Server error occurred. Please try again."
+   - Action: Retry button
+
+3. Invalid image
+   - Message: "Image could not be processed. Try another."
+   - Action: Back to upload
+
+4. Timeout
+   - Message: "Analysis took too long. Please try again."
+   - Action: Retry button
+
+Display Method:
+- Toast notification for temporary errors
+- Inline error message for validation errors
+- Modal for critical errors
+```
+
+#### 13.4 Loading States
+```
+Loading Messages (rotate during analysis):
+- "Analyzing your image..."
+- "Processing skin features..."
+- "Matching symptoms..."
+- "Generating recommendations..."
+
+Visual Elements:
+- Animated spinner
+- Progress messages
+- "This may take 10-15 seconds" notice
+

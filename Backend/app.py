@@ -71,24 +71,33 @@ def _initialize_model(app: Flask) -> None:
     try:
         # Get model path from config
         model_path = app.config.get("MODEL_PATH")
+        base_dir = Path(__file__).resolve().parent
         
-        # Check if the configured model exists, otherwise use the actual model file
+        # Check if the configured model exists, otherwise try alternatives
         if not os.path.exists(model_path):
-            # Try the actual model file in the models directory
-            base_dir = Path(__file__).resolve().parent
-            actual_model = base_dir / "models" / "best_model.h5"
-            if actual_model.exists():
-                model_path = str(actual_model)
-                app.logger.info(f"Using actual model: {model_path}")
-            else:
-                app.logger.error(f"Model file not found at {model_path}")
+            # Try different model files in order of preference
+            model_candidates = [
+                base_dir / "models" / "keras_model.h5",  # Teachable Machine model
+                base_dir / "models" / "best_model.h5",
+                base_dir / "models" / "best_model.keras",
+            ]
+            
+            model_found = False
+            for candidate in model_candidates:
+                if candidate.exists():
+                    model_path = str(candidate)
+                    app.logger.info(f"Using model: {model_path}")
+                    model_found = True
+                    break
+            
+            if not model_found:
+                app.logger.error(f"No model file found")
                 raise FileNotFoundError(f"Model file not found")
         
         # Load the model
         predictor.load_model(model_path)
         
         # Load disease mapping
-        base_dir = Path(__file__).resolve().parent
         mapping_path = base_dir / "models" / "disease_mapping.json"
         predictor.load_disease_mapping(str(mapping_path))
         

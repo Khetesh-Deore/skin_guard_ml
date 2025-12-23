@@ -14,9 +14,9 @@ def test_predictor():
     print("Testing Feature 3: ML Prediction Module")
     print("=" * 60)
     
-    # Get paths
+    # Get paths - using Teachable Machine model
     base_dir = Path(__file__).resolve().parent
-    model_path = base_dir / "models" / "skin_efficientnet_v2_final_90plus.h5"
+    model_path = base_dir / "models" / "keras_model.h5"
     mapping_path = base_dir / "models" / "disease_mapping.json"
     
     # Test 1: Load model

@@ -1,6 +1,7 @@
 """
 ML Prediction Module
 Handles model loading, inference, and prediction result formatting
+Supports Teachable Machine models (keras_model.h5)
 """
 
 import os
@@ -49,41 +50,21 @@ def load_model(model_path: str) -> None:
         
         logger.info(f"Loading model from: {model_path}")
         
-        # Import TensorFlow here to avoid loading if not needed
-        import tensorflow as tf
-        from tensorflow import keras
-        
-        # Set TensorFlow to inference mode for better performance
-        tf.config.optimizer.set_jit(False)  # Disable XLA for compatibility
-        
-        # Workaround for TensorFlow 2.20+ quantization_mode issue
-        # This is a known bug in TF 2.20 with certain saved models
+        # Try tf-keras first for Teachable Machine model compatibility
         try:
-            # Try loading with custom_objects to handle quantization issues
-            _model = keras.models.load_model(
-                model_path,
-                compile=False,
-                custom_objects=None
-            )
-        except (TypeError, AttributeError) as e:
-            # If that fails, try with safe_mode disabled
-            logger.warning(f"First load attempt failed: {e}. Trying alternative method...")
-            try:
-                import h5py
-                # Load weights manually if direct loading fails
-                with h5py.File(model_path, 'r') as f:
-                    # Check if it's a full model or just weights
-                    if 'model_config' in f.attrs or 'layer_names' in f.attrs:
-                        # Try loading as SavedModel format
-                        _model = keras.models.load_model(model_path, compile=False)
-                    else:
-                        raise ValueError("Unable to load model with current method")
-            except Exception as e2:
-                logger.error(f"Alternative load method also failed: {e2}")
-                raise Exception(f"Could not load model. Original error: {e}")
-        
-        # Compile for inference (no training needed)
-        _model.compile()
+            import tf_keras
+            _model = tf_keras.models.load_model(model_path, compile=False)
+            logger.info("Model loaded with tf-keras (legacy Keras 2.x)")
+        except ImportError:
+            # Fallback to tensorflow.keras
+            import tensorflow as tf
+            from tensorflow import keras
+            
+            # Set TensorFlow to inference mode for better performance
+            tf.config.optimizer.set_jit(False)  # Disable XLA for compatibility
+            
+            _model = keras.models.load_model(model_path, compile=False)
+            logger.info("Model loaded with tensorflow.keras")
         
         logger.info(f"Model loaded successfully. Input shape: {_model.input_shape}")
         
@@ -214,12 +195,22 @@ def predict_disease(image_array: np.ndarray, top_k: int = 3) -> Dict:
                 f"Image shape mismatch. Expected {expected_shape[1:]}, got {image_array.shape[1:]}"
             )
         
+        # Log input statistics for debugging
+        logger.info(f"Input array stats - shape: {image_array.shape}, "
+                   f"min: {image_array.min():.4f}, max: {image_array.max():.4f}, "
+                   f"mean: {image_array.mean():.4f}, std: {image_array.std():.4f}")
+        
         # Run prediction
         logger.info("Running model prediction...")
         predictions = _model.predict(image_array, verbose=0)
         
         # Get probability distribution (first batch item)
         probabilities = predictions[0]
+        
+        # Log raw predictions for debugging
+        logger.info(f"Raw predictions shape: {predictions.shape}")
+        logger.info(f"Probabilities: {probabilities}")
+        logger.info(f"Sum of probabilities: {probabilities.sum():.4f}")
         
         # Get top K predictions
         top_indices = np.argsort(probabilities)[::-1][:top_k]
@@ -232,6 +223,7 @@ def predict_disease(image_array: np.ndarray, top_k: int = 3) -> Dict:
                 "disease": disease_name,
                 "confidence": round(confidence, 4)
             })
+            logger.info(f"  Class {idx} ({disease_name}): {confidence:.4f}")
         
         # Extract top prediction
         predicted_disease = top_predictions[0]["disease"]
@@ -251,7 +243,7 @@ def predict_disease(image_array: np.ndarray, top_k: int = 3) -> Dict:
             "review_reason": review_reason
         }
         
-        logger.info(f"Prediction complete: {predicted_disease} ({confidence_level} confidence)")
+        logger.info(f"Prediction complete: {predicted_disease} ({confidence_level} confidence: {confidence:.4f})")
         
         return result
         
