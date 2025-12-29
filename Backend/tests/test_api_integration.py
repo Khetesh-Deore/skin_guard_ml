@@ -4,7 +4,7 @@ Test script to verify full API integration with Teachable Machine model.
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app import app
 
@@ -15,7 +15,7 @@ def test_full_prediction():
     print("=" * 60)
     
     # Find a test image
-    test_dir = Path(__file__).resolve().parent.parent / "data" / "SkinDisease" / "SkinDisease" / "test" / "Acne"
+    test_dir = Path(__file__).resolve().parent.parent.parent / "data" / "SkinDisease" / "SkinDisease" / "test" / "Acne"
     test_images = list(test_dir.glob("*.jpeg"))[:1]
     if not test_images:
         test_images = list(test_dir.glob("*.jpg"))[:1]
