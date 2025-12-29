@@ -1,64 +1,21 @@
 # SkinGuard ML - Backend Requirements
-# Python 3.9+ required
 
-# ============================================
 # Core Web Framework
-# ============================================
 flask>=2.3.0
 flask-cors>=4.0.0
 werkzeug>=2.3.0
+gunicorn>=21.0.0
 
-# ============================================
-# Machine Learning & Deep Learning
-# ============================================
-tensorflow>=2.12.0
-# Note: tensorflow includes keras
+# Machine Learning
+tensorflow>=2.15.0
+tf-keras>=2.15.0
 
-# For CPU-only installation (smaller size):
-# tensorflow-cpu>=2.12.0
-
-# ============================================
 # Image Processing
-# ============================================
 pillow>=9.5.0
-opencv-python>=4.7.0
-# For headless servers use:
-# opencv-python-headless>=4.7.0
+opencv-python-headless>=4.7.0
 
-# ============================================
-# Data Processing & Scientific Computing
-# ============================================
+# Data Processing
 numpy>=1.23.0
-pandas>=2.0.0
 
-# ============================================
 # Utilities
-# ============================================
 python-dotenv>=1.0.0
-requests>=2.31.0
-
-# ============================================
-# Development & Testing
-# ============================================
-pytest>=7.3.0
-pytest-cov>=4.1.0
-pytest-flask>=1.2.0
-
-# ============================================
-# Code Quality (Optional)
-# ============================================
-# flake8>=6.0.0
-# black>=23.0.0
-# isort>=5.12.0
-
-# ============================================
-# Production Server (Optional)
-# ============================================
- gunicorn>=21.0.0
- gevent>=23.0.0
-
-# ============================================
-# Monitoring & Logging (Optional)
-# ============================================
-# sentry-sdk[flask]>=1.25.0
-# python-json-logger>=2.0.0
