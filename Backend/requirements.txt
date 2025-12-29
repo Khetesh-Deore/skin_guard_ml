@@ -54,8 +54,8 @@ pytest-flask>=1.2.0
 # ============================================
 # Production Server (Optional)
 # ============================================
-# gunicorn>=21.0.0
-# gevent>=23.0.0
+ gunicorn>=21.0.0
+ gevent>=23.0.0
 
 # ============================================
 # Monitoring & Logging (Optional)
