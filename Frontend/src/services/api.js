@@ -21,10 +21,11 @@ import axios from 'axios';
  */
 const CONFIG = {
   // Base URL from environment variable
+  // For Hugging Face: https://YOUR-USERNAME-skinguard-api.hf.space/api
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   
-  // Timeout settings (30s for ML model processing)
-  timeout: 30000,
+  // Timeout settings (180s for ML model processing on free tier)
+  timeout: 180000,
   
   // File size limit (in MB)
   maxFileSizeMB: parseInt(import.meta.env.VITE_MAX_FILE_SIZE_MB) || 5,
