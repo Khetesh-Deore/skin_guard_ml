@@ -85,6 +85,57 @@ def get_confidence_color(confidence):
     return "red"
 
 
+# Disease recommendations database
+RECOMMENDATIONS = {
+    "Acne": {
+        "description": "A common skin condition that occurs when hair follicles become clogged with oil and dead skin cells.",
+        "home_remedies": [
+            "Wash face twice daily with gentle cleanser",
+            "Use non-comedogenic moisturizers",
+            "Apply benzoyl peroxide or salicylic acid products",
+            "Avoid touching your face frequently"
+        ],
+        "when_to_see_doctor": "If acne is severe, painful, or not responding to over-the-counter treatments after 2-3 months."
+    },
+    "Eczema": {
+        "description": "A condition that causes dry, itchy, and inflamed skin patches.",
+        "home_remedies": [
+            "Apply moisturizer immediately after bathing",
+            "Use fragrance-free products",
+            "Take lukewarm (not hot) showers",
+            "Wear soft, breathable fabrics"
+        ],
+        "when_to_see_doctor": "If symptoms interfere with sleep or daily activities, or if you notice signs of infection."
+    },
+    "Psoriasis": {
+        "description": "An autoimmune condition causing rapid skin cell buildup, resulting in scaling on the skin's surface.",
+        "home_remedies": [
+            "Keep skin moisturized",
+            "Use medicated shampoos for scalp psoriasis",
+            "Get moderate sun exposure",
+            "Manage stress levels"
+        ],
+        "when_to_see_doctor": "If symptoms are widespread, painful, or affecting your quality of life."
+    }
+}
+
+DEFAULT_RECOMMENDATION = {
+    "description": "A skin condition that requires professional evaluation.",
+    "home_remedies": [
+        "Keep the affected area clean and dry",
+        "Avoid scratching or irritating the area",
+        "Use gentle, fragrance-free products",
+        "Monitor for any changes"
+    ],
+    "when_to_see_doctor": "Consult a dermatologist for proper diagnosis and treatment plan."
+}
+
+
+def get_recommendations(disease):
+    """Get recommendations for a disease"""
+    return RECOMMENDATIONS.get(disease, DEFAULT_RECOMMENDATION)
+
+
 # Main App
 st.title("🏥 SkinGuard ML")
 st.markdown("### AI-Powered Skin Condition Analysis")
@@ -102,6 +153,7 @@ try:
     model = load_model()
     labels = load_labels()
     model_loaded = True
+    st.success("✅ Model loaded successfully!")
 except Exception as e:
     st.error(f"Failed to load model: {e}")
     model_loaded = False
@@ -120,7 +172,7 @@ if model_loaded:
     symptoms = st.multiselect(
         "Select symptoms you're experiencing:",
         ["Itching", "Redness", "Dry skin", "Bumps", "Pain", "Swelling", 
-         "Scaling", "Burning", "Bleeding", "Discharge"]
+         "Scaling", "Burning", "Bleeding", "Discharge", "Rash", "Blisters"]
     )
     
     if uploaded_file is not None:
@@ -142,7 +194,6 @@ if model_loaded:
                 # Top prediction
                 top = results[0]
                 confidence_pct = top['confidence'] * 100
-                color = get_confidence_color(top['confidence'])
                 
                 st.markdown(f"**Predicted Condition:**")
                 st.markdown(f"## {top['disease']}")
@@ -151,36 +202,56 @@ if model_loaded:
                 
                 # Confidence level
                 if top['confidence'] >= 0.8:
-                    st.success("High confidence prediction")
+                    st.success("✅ High confidence prediction")
                 elif top['confidence'] >= 0.6:
-                    st.warning("Moderate confidence - consider consulting a doctor")
+                    st.warning("⚠️ Moderate confidence - consider consulting a doctor")
                 else:
-                    st.error("Low confidence - please consult a healthcare professional")
+                    st.error("❌ Low confidence - please consult a healthcare professional")
             
             # Other possibilities
             st.markdown("---")
-            st.markdown("### Other Possibilities")
-            for i, result in enumerate(results[1:], 2):
-                st.markdown(f"{i}. **{result['disease']}** - {result['confidence']*100:.1f}%")
+            st.markdown("### 🔄 Other Possibilities")
+            cols = st.columns(len(results[1:]) if len(results) > 1 else 1)
+            for i, (col, result) in enumerate(zip(cols, results[1:])):
+                with col:
+                    st.metric(
+                        label=result['disease'],
+                        value=f"{result['confidence']*100:.1f}%"
+                    )
+            
+            # Get recommendations
+            recs = get_recommendations(top['disease'])
+            
+            # Disease info
+            st.markdown("---")
+            st.markdown("### ℹ️ About This Condition")
+            st.info(recs['description'])
             
             # Recommendations
-            st.markdown("---")
-            st.markdown("### 💡 Recommendations")
-            st.info(
-                "1. Keep the affected area clean and dry\n"
-                "2. Avoid scratching or irritating the area\n"
-                "3. Monitor for any changes in size, color, or symptoms\n"
-                "4. Consult a dermatologist for proper diagnosis and treatment"
-            )
+            st.markdown("### 💡 Home Care Recommendations")
+            for i, remedy in enumerate(recs['home_remedies'], 1):
+                st.markdown(f"{i}. {remedy}")
+            
+            # Symptoms analysis
+            if symptoms:
+                st.markdown("---")
+                st.markdown("### 🩺 Symptom Analysis")
+                st.markdown(f"You reported: **{', '.join(symptoms)}**")
+                st.info("These symptoms have been noted. Share them with your healthcare provider for a more accurate assessment.")
             
             # When to see a doctor
+            st.markdown("---")
             st.markdown("### 🏥 When to See a Doctor")
-            st.warning(
-                "Seek medical attention if you experience:\n"
-                "- Rapid spreading of the condition\n"
-                "- Severe pain or discomfort\n"
-                "- Signs of infection (pus, fever)\n"
-                "- No improvement after 2 weeks of home care"
+            st.warning(recs['when_to_see_doctor'])
+            
+            # General warning signs
+            st.markdown("### ⚠️ Seek Immediate Medical Attention If:")
+            st.error(
+                "• Rapid spreading of the condition\n"
+                "• Severe pain or discomfort\n"
+                "• Signs of infection (pus, fever, warmth)\n"
+                "• Difficulty breathing or swallowing\n"
+                "• The condition affects your eyes"
             )
 
 else:
