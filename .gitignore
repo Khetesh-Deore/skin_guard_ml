@@ -22,7 +22,13 @@ __pycache__/
 *.h5
 *.pt
 *.pth
-models/
+
+# Exception: Allow models in streamlit_app and Backend
+!streamlit_app/models/*.h5
+!streamlit_app/models/*.keras
+!Backend/models/*.h5
+!Backend/models/*.keras
+
 
 # Virtual env
 .venv/
