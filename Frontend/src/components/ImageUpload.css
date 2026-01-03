@@ -3,6 +3,7 @@
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
 }
 
 .image-upload-container h3 {
@@ -12,6 +13,91 @@
   font-weight: 600;
 }
 
+/* Method Selection Cards */
+.method-selection {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.method-card {
+  flex: 1;
+  max-width: 200px;
+  padding: 24px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  outline: none;
+}
+
+.method-card:hover {
+  border-color: #1976d2;
+  background: #f0f7ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+}
+
+.method-card:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+}
+
+.method-icon {
+  font-size: 2.5rem;
+}
+
+.method-title {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.method-desc {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Method Header */
+.method-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.method-header span {
+  font-weight: 500;
+  color: #555;
+}
+
+.camera-label {
+  font-weight: 400;
+  color: #888;
+  font-size: 0.9em;
+}
+
+.change-method-btn {
+  background: none;
+  border: none;
+  color: #1976d2;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.change-method-btn:hover {
+  background: #e3f2fd;
+}
+
+/* Upload Area */
 .upload-area {
   border: 2px dashed #ccc;
   border-radius: 12px;
@@ -41,18 +127,14 @@
   box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.15);
 }
 
-.upload-area.dragging .upload-icon {
-  transform: scale(1.1);
-  transition: transform 0.2s;
-}
-
-.upload-area.dragging .upload-placeholder p {
-  color: #1976d2;
-}
-
 .upload-area.error {
   border-color: #d32f2f;
   background: #ffebee;
+}
+
+.upload-area.uploading {
+  pointer-events: none;
+  opacity: 0.7;
 }
 
 .upload-placeholder {
@@ -63,7 +145,6 @@
   font-size: 3rem;
   display: block;
   margin-bottom: 12px;
-  transition: transform 0.2s;
 }
 
 .upload-placeholder p {
@@ -82,6 +163,255 @@
   margin-top: 12px !important;
 }
 
+/* Camera Container */
+.camera-container {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.camera-preview {
+  width: 100%;
+  height: auto;
+  min-height: 280px;
+  max-height: 400px;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+
+.camera-preview.mirror {
+  transform: scaleX(-1);
+}
+
+/* Camera Loading */
+.camera-loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: #fff;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.camera-loading p {
+  margin: 8px 0;
+}
+
+.camera-hint {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* Camera Error */
+.camera-error {
+  text-align: center;
+  padding: 40px 20px;
+  color: #fff;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-error .error-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.camera-error p {
+  margin: 0 0 24px;
+  line-height: 1.5;
+  max-width: 300px;
+}
+
+.camera-error-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.retry-btn,
+.fallback-btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.retry-btn {
+  background: #1976d2;
+  color: white;
+}
+
+.retry-btn:hover {
+  background: #1565c0;
+}
+
+.fallback-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.fallback-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Camera Controls */
+.camera-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  padding: 20px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.camera-btn {
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.switch-btn,
+.cancel-btn {
+  width: 48px;
+  height: 48px;
+  font-size: 1.3rem;
+}
+
+.switch-btn:hover,
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.1);
+}
+
+.capture-btn {
+  width: 72px;
+  height: 72px;
+  background: white;
+  position: relative;
+}
+
+.capture-btn:hover {
+  transform: scale(1.05);
+}
+
+.capture-btn:active {
+  transform: scale(0.95);
+}
+
+.capture-ring {
+  width: 58px;
+  height: 58px;
+  border: 4px solid #333;
+  border-radius: 50%;
+  display: block;
+}
+
+/* Captured Preview */
+.captured-preview {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.captured-image {
+  width: 100%;
+  max-height: 350px;
+  object-fit: contain;
+  display: block;
+  background: #000;
+}
+
+.captured-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: #1a1a1a;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.use-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.use-btn:hover {
+  background: #43a047;
+}
+
+.retake-btn {
+  background: #616161;
+  color: white;
+}
+
+.retake-btn:hover {
+  background: #757575;
+}
+
+.cancel-action-btn {
+  background: transparent;
+  border: 1px solid #ef5350;
+  color: #ef5350;
+}
+
+.cancel-action-btn:hover {
+  background: #ef5350;
+  color: white;
+}
+
+/* Preview Area */
 .preview-area {
   text-align: center;
 }
@@ -106,7 +436,6 @@
   opacity: 1;
 }
 
-/* Success badge when image loads */
 .preview-success-badge {
   position: absolute;
   bottom: 8px;
@@ -125,14 +454,8 @@
 }
 
 @keyframes scaleIn {
-  from {
-    transform: scale(0);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 .remove-image-btn {
@@ -216,31 +539,6 @@
   text-align: center;
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-  .image-upload-container {
-    padding: 16px;
-  }
-
-  .upload-area {
-    padding: 30px 16px;
-  }
-
-  .upload-icon {
-    font-size: 2.5rem;
-  }
-
-  .image-preview {
-    max-height: 200px;
-  }
-
-  .file-info {
-    flex-direction: column;
-    gap: 12px;
-  }
-}
-
-
 /* Processing & Upload States */
 .processing-overlay {
   position: absolute;
@@ -273,15 +571,6 @@
   font-size: 0.9rem;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.upload-area.uploading {
-  pointer-events: none;
-  opacity: 0.7;
-}
-
 .upload-progress-overlay {
   position: absolute;
   top: 0;
@@ -312,6 +601,74 @@
   50% { opacity: 0.5; }
 }
 
-.image-upload-container {
-  position: relative;
+/* Responsive */
+@media (max-width: 480px) {
+  .image-upload-container {
+    padding: 16px;
+  }
+
+  .method-selection {
+    flex-direction: column;
+  }
+  
+  .method-card {
+    max-width: 100%;
+    padding: 20px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 16px;
+  }
+  
+  .method-icon {
+    font-size: 2rem;
+  }
+
+  .upload-area {
+    padding: 30px 16px;
+  }
+
+  .upload-icon {
+    font-size: 2.5rem;
+  }
+
+  .image-preview {
+    max-height: 200px;
+  }
+
+  .file-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .camera-controls {
+    gap: 20px;
+    padding: 16px;
+  }
+  
+  .capture-btn {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .capture-ring {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .switch-btn,
+  .cancel-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+  
+  .captured-actions {
+    gap: 8px;
+    padding: 12px;
+  }
+  
+  .action-btn {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
 }
