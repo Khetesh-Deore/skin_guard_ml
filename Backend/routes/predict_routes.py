@@ -37,6 +37,7 @@ from modules.recommendation_engine import (
     get_disclaimer,
     format_recommendations
 )
+from modules.disease_descriptions import get_disease_description
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -511,11 +512,18 @@ def _format_prediction_response(
         "disclaimer": "..."
     }
     """
+    # Get disease name and description
+    disease_name = prediction_result["predicted_disease"]
+    disease_info = get_disease_description(disease_name)
+    
     # Format prediction section
     prediction = {
-        "disease": prediction_result["predicted_disease"],
+        "disease": disease_name,
         "confidence": round(prediction_result["confidence"], 4),
         "confidence_level": prediction_result["confidence_level"],
+        "description": disease_info.get("description", ""),
+        "causes": disease_info.get("causes", ""),
+        "common_in": disease_info.get("common_in", ""),
         "alternative_possibilities": []
     }
     
@@ -525,7 +533,8 @@ def _format_prediction_response(
         prediction["alternative_possibilities"] = [
             {
                 "disease": p["disease"],
-                "confidence": round(p["confidence"], 4)
+                "confidence": round(p["confidence"], 4),
+                "description": get_disease_description(p["disease"]).get("description", "")
             }
             for p in top_predictions[1:4]  # Top 3 alternatives
         ]

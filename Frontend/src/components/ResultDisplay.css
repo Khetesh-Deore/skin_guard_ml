@@ -110,10 +110,69 @@
 }
 
 .main-prediction h3 {
-  margin: 0 0 10px;
+  margin: 0 0 16px;
   color: #1976d2;
   font-size: 1.3rem;
   text-transform: capitalize;
+}
+
+/* Disease Info Section */
+.disease-info-section {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.disease-info-section h4 {
+  margin: 0 0 14px;
+  color: #1976d2;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Disease Description Box */
+.disease-description-box {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e8e8e8;
+}
+
+.disease-description {
+  margin: 0 0 16px;
+  color: #444;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  text-align: justify;
+}
+
+.disease-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.disease-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #1976d2;
+  font-size: 0.9rem;
+}
+
+.detail-value {
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  padding-left: 24px;
 }
 
 .main-prediction .description {
@@ -289,25 +348,46 @@
 }
 
 .alternative-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
+  padding: 14px;
   border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
 .alternative-item:last-child {
   border-bottom: none;
+  margin-bottom: 0;
+}
+
+.alt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .alt-disease {
   color: #333;
   text-transform: capitalize;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .alt-confidence {
-  color: #888;
+  color: #1976d2;
   font-size: 0.9rem;
+  font-weight: 600;
+  background: #e3f2fd;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.alt-description {
+  margin: 0;
+  color: #666;
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 /* Symptom Analysis Section */
