@@ -32,10 +32,36 @@ const ResultDisplay = ({ result, onReset, onNewAnalysis, loading = false }) => {
     disclaimer: false,
   });
 
+  // State for Read More/Less functionality
+  const [expandedBoxes, setExpandedBoxes] = useState({
+    description: false,
+    rootCause: false,
+    causes: false,
+    commonIn: false,
+  });
+
+  // State for alternative boxes (dynamic based on index)
+  const [expandedAltBoxes, setExpandedAltBoxes] = useState({});
+
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
+    }));
+  };
+
+  const toggleBox = (boxName) => {
+    setExpandedBoxes(prev => ({
+      ...prev,
+      [boxName]: !prev[boxName]
+    }));
+  };
+
+  const toggleAltBox = (index, field) => {
+    const key = `${index}-${field}`;
+    setExpandedAltBoxes(prev => ({
+      ...prev,
+      [key]: !prev[key]
     }));
   };
 
@@ -331,37 +357,91 @@ const ResultDisplay = ({ result, onReset, onNewAnalysis, loading = false }) => {
         </div>
       </div>
 
-      {/* Disease Description Section - Below Analysis, Above Alternatives */}
+      {/* Disease Information Section - Below Analysis, Above Alternatives */}
       <div className="disease-info-section">
         <h4>About {disease}</h4>
-        <div className="disease-description-box">
-          <p className="disease-description">{diseaseDescription}</p>
-          
-          {/* Root Cause Section */}
-          {diseaseRootCause && (
-            <div className="disease-root-cause">
-              <h5>🔬 Root Cause & Pathophysiology</h5>
-              <p className="root-cause-text">{diseaseRootCause}</p>
-            </div>
-          )}
-          
-          {(diseaseCauses || diseaseCommonIn) && (
-            <div className="disease-details">
-              {diseaseCauses && (
-                <div className="disease-detail-item">
-                  <span className="detail-label">⚡ Common Causes:</span>
-                  <span className="detail-value">{diseaseCauses}</span>
-                </div>
-              )}
-              {diseaseCommonIn && (
-                <div className="disease-detail-item">
-                  <span className="detail-label">👥 Commonly Affects:</span>
-                  <span className="detail-value">{diseaseCommonIn}</span>
-                </div>
-              )}
-            </div>
+        
+        {/* Description Box */}
+        <div className="info-box description-box">
+          <div className="info-box-header">
+            <span className="info-icon">📋</span>
+            <h5>Description</h5>
+          </div>
+          <p className={`info-box-content ${expandedBoxes.description ? 'expanded' : 'collapsed'}`}>
+            {diseaseDescription}
+          </p>
+          {diseaseDescription && diseaseDescription.length > 200 && (
+            <button 
+              className="read-more-btn"
+              onClick={() => toggleBox('description')}
+            >
+              {expandedBoxes.description ? 'Read Less ▲' : 'Read More ▼'}
+            </button>
           )}
         </div>
+
+        {/* Root Cause Box */}
+        {diseaseRootCause && (
+          <div className="info-box root-cause-box">
+            <div className="info-box-header">
+              <span className="info-icon">🔬</span>
+              <h5>Root Cause & Pathophysiology</h5>
+            </div>
+            <p className={`info-box-content ${expandedBoxes.rootCause ? 'expanded' : 'collapsed'}`}>
+              {diseaseRootCause}
+            </p>
+            {diseaseRootCause.length > 200 && (
+              <button 
+                className="read-more-btn"
+                onClick={() => toggleBox('rootCause')}
+              >
+                {expandedBoxes.rootCause ? 'Read Less ▲' : 'Read More ▼'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Common Causes Box */}
+        {diseaseCauses && (
+          <div className="info-box causes-box">
+            <div className="info-box-header">
+              <span className="info-icon">⚡</span>
+              <h5>Common Causes</h5>
+            </div>
+            <p className={`info-box-content ${expandedBoxes.causes ? 'expanded' : 'collapsed'}`}>
+              {diseaseCauses}
+            </p>
+            {diseaseCauses.length > 150 && (
+              <button 
+                className="read-more-btn"
+                onClick={() => toggleBox('causes')}
+              >
+                {expandedBoxes.causes ? 'Read Less ▲' : 'Read More ▼'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Commonly Affects Box */}
+        {diseaseCommonIn && (
+          <div className="info-box common-in-box">
+            <div className="info-box-header">
+              <span className="info-icon">👥</span>
+              <h5>Commonly Affects</h5>
+            </div>
+            <p className={`info-box-content ${expandedBoxes.commonIn ? 'expanded' : 'collapsed'}`}>
+              {diseaseCommonIn}
+            </p>
+            {diseaseCommonIn.length > 150 && (
+              <button 
+                className="read-more-btn"
+                onClick={() => toggleBox('commonIn')}
+              >
+                {expandedBoxes.commonIn ? 'Read Less ▲' : 'Read More ▼'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Alternative Possibilities (collapsible) */}
@@ -389,9 +469,42 @@ const ResultDisplay = ({ result, onReset, onNewAnalysis, loading = false }) => {
                         {formatConfidence(alt.confidence)}%
                       </span>
                     </div>
-                    <p className="alt-description">
-                      {alt.description || getDiseaseDescription(alt.disease || alt.condition)}
-                    </p>
+                    
+                    {/* Description */}
+                    {alt.description && (
+                      <div className="alt-info-section">
+                        <strong className="alt-info-label">📋 Description:</strong>
+                        <p className={`alt-description ${expandedAltBoxes[`${index}-description`] ? 'expanded' : 'collapsed'}`}>
+                          {alt.description}
+                        </p>
+                        {alt.description.length > 200 && (
+                          <button 
+                            className="read-more-btn-small"
+                            onClick={() => toggleAltBox(index, 'description')}
+                          >
+                            {expandedAltBoxes[`${index}-description`] ? 'Read Less ▲' : 'Read More ▼'}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Root Cause */}
+                    {alt.root_cause && (
+                      <div className="alt-info-section">
+                        <strong className="alt-info-label">🔬 Root Cause:</strong>
+                        <p className={`alt-root-cause ${expandedAltBoxes[`${index}-rootCause`] ? 'expanded' : 'collapsed'}`}>
+                          {alt.root_cause}
+                        </p>
+                        {alt.root_cause.length > 200 && (
+                          <button 
+                            className="read-more-btn-small"
+                            onClick={() => toggleAltBox(index, 'rootCause')}
+                          >
+                            {expandedAltBoxes[`${index}-rootCause`] ? 'Read Less ▲' : 'Read More ▼'}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -285,6 +285,10 @@ const extractPredictionData = (response) => {
     confidence: prediction.confidence ?? prediction.confidence_score ?? 0,
     confidenceLevel: prediction.confidence_level 
       || getConfidenceLevel(prediction.confidence ?? prediction.confidence_score ?? 0),
+    description: prediction.description || null,
+    root_cause: prediction.root_cause || prediction.rootCause || null,
+    causes: prediction.causes || null,
+    common_in: prediction.common_in || prediction.commonIn || null,
     alternativePossibilities: prediction.alternative_possibilities 
       || prediction.top_predictions 
       || [],

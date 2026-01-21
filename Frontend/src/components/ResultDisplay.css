@@ -126,13 +126,143 @@
 }
 
 .disease-info-section h4 {
-  margin: 0 0 14px;
+  margin: 0 0 20px;
   color: #1976d2;
   font-size: 1.1rem;
   font-weight: 600;
 }
 
-/* Disease Description Box */
+/* Info Box Styles - Each field in its own box */
+.info-box {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-left: 4px solid;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.info-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-box:last-child {
+  margin-bottom: 0;
+}
+
+/* Different border colors for each box type */
+.description-box {
+  border-left-color: #2196f3;
+}
+
+.root-cause-box {
+  border-left-color: #9c27b0;
+}
+
+.causes-box {
+  border-left-color: #ff9800;
+}
+
+.common-in-box {
+  border-left-color: #4caf50;
+}
+
+/* Info Box Header */
+.info-box-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.info-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.info-box-header h5 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Info Box Content */
+.info-box-content {
+  margin: 0;
+  color: #444;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  text-align: justify;
+  transition: max-height 0.3s ease;
+}
+
+/* Collapsed state - show only 2 lines */
+.info-box-content.collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 3.4em; /* 2 lines * 1.7 line-height */
+}
+
+/* Expanded state - show all content */
+.info-box-content.expanded {
+  display: block;
+  max-height: none;
+}
+
+/* Read More/Less Button */
+.read-more-btn {
+  background: none;
+  border: none;
+  color: #1976d2;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 8px;
+  display: block;
+  width: 100%;
+  text-align: center;
+  transition: color 0.2s, background-color 0.2s;
+  border-radius: 4px;
+}
+
+.read-more-btn:hover {
+  color: #1565c0;
+  background-color: #f0f7ff;
+}
+
+.read-more-btn:active {
+  transform: scale(0.98);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .disease-info-section {
+    padding: 16px;
+  }
+  
+  .info-box {
+    padding: 14px;
+  }
+  
+  .info-box-header h5 {
+    font-size: 0.95rem;
+  }
+  
+  .info-box-content {
+    font-size: 0.9rem;
+  }
+}
+
+/* Old styles - keeping for backward compatibility but can be removed */
 .disease-description-box {
   background: white;
   border-radius: 8px;
@@ -412,6 +542,72 @@
   color: #666;
   font-size: 0.85rem;
   line-height: 1.5;
+}
+
+/* Alternative Info Sections */
+.alt-info-section {
+  margin-top: 12px;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+  border-left: 3px solid #e0e0e0;
+}
+
+.alt-info-label {
+  display: block;
+  color: #1976d2;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.alt-description,
+.alt-root-cause {
+  margin: 0;
+  color: #555;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  text-align: justify;
+  transition: max-height 0.3s ease;
+}
+
+/* Collapsed state for alternative boxes - show only 2 lines */
+.alt-description.collapsed,
+.alt-root-cause.collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 3.2em; /* 2 lines * 1.6 line-height */
+}
+
+/* Expanded state for alternative boxes */
+.alt-description.expanded,
+.alt-root-cause.expanded {
+  display: block;
+  max-height: none;
+}
+
+/* Smaller Read More button for alternatives */
+.read-more-btn-small {
+  background: none;
+  border: none;
+  color: #1976d2;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 6px;
+  display: block;
+  width: 100%;
+  text-align: center;
+  transition: color 0.2s;
+}
+
+.read-more-btn-small:hover {
+  color: #1565c0;
+  text-decoration: underline;
 }
 
 /* Symptom Analysis Section */
