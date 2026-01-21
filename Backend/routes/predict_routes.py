@@ -522,6 +522,7 @@ def _format_prediction_response(
         "confidence": round(prediction_result["confidence"], 4),
         "confidence_level": prediction_result["confidence_level"],
         "description": disease_info.get("description", ""),
+        "root_cause": disease_info.get("root_cause", ""),
         "causes": disease_info.get("causes", ""),
         "common_in": disease_info.get("common_in", ""),
         "alternative_possibilities": []
@@ -534,7 +535,8 @@ def _format_prediction_response(
             {
                 "disease": p["disease"],
                 "confidence": round(p["confidence"], 4),
-                "description": get_disease_description(p["disease"]).get("description", "")
+                "description": get_disease_description(p["disease"]).get("description", ""),
+                "root_cause": get_disease_description(p["disease"]).get("root_cause", "")
             }
             for p in top_predictions[1:4]  # Top 3 alternatives
         ]

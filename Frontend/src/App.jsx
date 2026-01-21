@@ -51,7 +51,7 @@ function App() {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   
   const loadingMessages = [
-    { text: "Analyzing your image...", icon: "🔍" },
+    { text: "Diagnosis in progress...", icon: "🔍" },
     { text: "Processing skin features...", icon: "🧬" },
     { text: "Matching symptoms...", icon: "🩺" },
     { text: "Generating recommendations...", icon: "📋" }

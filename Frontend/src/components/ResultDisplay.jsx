@@ -78,12 +78,21 @@ const ResultDisplay = ({ result, onReset, onNewAnalysis, loading = false }) => {
   
   // Disease description from API or fallback
   const diseaseDescription = prediction.description || getDiseaseDescription(disease);
+  const diseaseRootCause = prediction.root_cause || prediction.rootCause || null;
   const diseaseCauses = prediction.causes || null;
   const diseaseCommonIn = prediction.common_in || prediction.commonIn || null;
   
   const severityLevel = severity.level || result.severity || 'unknown';
   const urgency = severity.urgency || 'routine';
   const severityExplanation = severity.explanation || null;
+
+  // Section descriptions for better UX
+  const sectionDescriptions = {
+    alternatives: "Other possible conditions based on the analysis. Consider these if symptoms don't match the primary prediction.",
+    symptoms: "How well your reported symptoms align with the predicted condition.",
+    severity: "Assessment of the condition's severity and recommended urgency of care.",
+    recommendations: "Personalized care suggestions based on the analysis results."
+  };
 
   /**
    * Fallback disease descriptions for when API doesn't provide them
@@ -327,11 +336,20 @@ const ResultDisplay = ({ result, onReset, onNewAnalysis, loading = false }) => {
         <h4>About {disease}</h4>
         <div className="disease-description-box">
           <p className="disease-description">{diseaseDescription}</p>
+          
+          {/* Root Cause Section */}
+          {diseaseRootCause && (
+            <div className="disease-root-cause">
+              <h5>🔬 Root Cause & Pathophysiology</h5>
+              <p className="root-cause-text">{diseaseRootCause}</p>
+            </div>
+          )}
+          
           {(diseaseCauses || diseaseCommonIn) && (
             <div className="disease-details">
               {diseaseCauses && (
                 <div className="disease-detail-item">
-                  <span className="detail-label">🔬 Common Causes:</span>
+                  <span className="detail-label">⚡ Common Causes:</span>
                   <span className="detail-value">{diseaseCauses}</span>
                 </div>
               )}
